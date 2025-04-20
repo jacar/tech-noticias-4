@@ -1,0 +1,7 @@
+{
+  "name": "webcincodev-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for webcincodevNew",
+  "type": "module",
+  "private": true
+}
