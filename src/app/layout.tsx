@@ -96,7 +96,7 @@ export default function RootLayout({
                 <InstallPrompt />
                 <DebugButton />
               </ErrorBoundaryWrapper>
-              <AnalyticsTracker siteKey="${siteKey}" />
+              <AnalyticsTracker siteKey="ca-pub-3735557735218596" />
             </DOMInspector>
           </DebugProvider>
         </ThemeProvider>
