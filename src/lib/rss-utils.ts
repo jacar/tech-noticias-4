@@ -195,8 +195,7 @@ export async function fetchRssNews(sourceId?: string, debugMode = false): Promis
     // Try multiple CORS proxies in case one fails
     const corsProxies = [
       'https://corsproxy.io/?',
-      'https://api.allorigins.win/raw?url=',
-      'https://cors-anywhere.herokuapp.com/'
+      'https://api.allorigins.win/raw?url='
     ];
     
     for (const source of sources) {

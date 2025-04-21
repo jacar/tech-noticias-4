@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NewsItem } from "@/types";
 import { formatRelativeTime } from "@/lib/mock-news";
 import { motion, AnimatePresence } from "framer-motion";
+import { validateUrl } from "@/lib/utils";
 
 interface HeroSliderProps {
   news: NewsItem[];
@@ -80,6 +81,12 @@ export const HeroSlider = ({ news }: HeroSliderProps) => {
   
   const currentNews = validNews[currentIndex];
   
+  // Compute link resolution for current slide
+  const rawLink = currentNews.originalLink || currentNews.url;
+  let sliderLink: string;
+  try { sliderLink = new URL(rawLink, currentNews.sourceUrl).toString(); }
+  catch { sliderLink = validateUrl(rawLink, currentNews.sourceUrl); }
+  
   return (
     <div 
       className="relative h-[300px] w-full overflow-hidden md:h-[500px]"
@@ -140,11 +147,7 @@ export const HeroSlider = ({ news }: HeroSliderProps) => {
             </p>
             
             <button 
-              onClick={() => {
-                if (currentNews.url) {
-                  window.open(currentNews.url, '_blank');
-                }
-              }}
+              onClick={() => window.open(sliderLink, '_blank')}
               className="rounded-lg bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-100 md:px-6 md:py-3"
             >
               Leer artículo
