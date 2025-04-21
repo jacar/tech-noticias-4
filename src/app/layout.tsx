@@ -83,6 +83,7 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#2B5797" />
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="mask-icon" href="/icons/icon-192x192.png" color="#FFFFFF" />
+        <meta name="google-adsense-account" content="ca-pub-3735557735218596" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3735557735218596"
           crossOrigin="anonymous"></script>
       </head>
