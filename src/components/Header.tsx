@@ -128,15 +128,17 @@ export const Header = () => {
           </button>
           
           <div className="flex items-center">
-            <div className="h-10 w-auto">
-              <Image 
-                src={logoSrc}
-                alt="webcincodev Logo"
-                width={140}
-                height={40}
-                className="h-10 w-auto"
-              />
-            </div>
+            <Link href="/">
+              <div className="h-10 w-auto">
+                <Image 
+                  src={logoSrc}
+                  alt="webcincodev Logo"
+                  width={140}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+              </div>
+            </Link>
           </div>
         </div>
 
