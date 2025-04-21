@@ -84,22 +84,30 @@ const rssFeedUrls: Record<string, string> = {
 };
 
 /**
+ * Normalize image URLs (handle protocol-relative URLs)
+ */
+function normalizeImageUrl(url: string): string {
+  if (url.startsWith('//')) return 'https:' + url;
+  return url;
+}
+
+/**
  * Extract image URL from various RSS feed formats
  */
 function extractImageUrl(item: CustomItem): string {
   // Try to get image from media:content
   if (item['media:content'] && item['media:content'].$.url) {
-    return item['media:content'].$.url;
+    return normalizeImageUrl(item['media:content'].$.url);
   }
   
   // Try to get image from media:thumbnail
   if (item['media:thumbnail'] && item['media:thumbnail'].$.url) {
-    return item['media:thumbnail'].$.url;
+    return normalizeImageUrl(item['media:thumbnail'].$.url);
   }
   
   // Try to get image from enclosure
   if (item.enclosure && item.enclosure.url) {
-    return item.enclosure.url;
+    return normalizeImageUrl(item.enclosure.url);
   }
   
   // Try to extract first image from content if available
@@ -107,12 +115,12 @@ function extractImageUrl(item: CustomItem): string {
     const imgRegex = /<img[^>]+src="([^">]+)"/;
     const match = item.content.match(imgRegex);
     if (match && match[1]) {
-      return match[1];
+      return normalizeImageUrl(match[1]);
     }
   }
   
   // Default image if nothing found
-  return 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop';
+  return normalizeImageUrl('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop');
 }
 
 /**
@@ -209,11 +217,11 @@ export async function fetchRssNews(sourceId?: string, debugMode = false): Promis
             console.log(`[DEBUG] Trying to fetch ${source} with proxy: ${proxyUrl}`);
           }
           
-          const feedUrl = encodeURIComponent(rssFeedUrls[source]);
+          const feedUrl = rssFeedUrls[source];
           
           // Add cache-busting parameters
           const timestamp = Date.now();
-          const urlWithTimestamp = `${feedUrl}?_t=${timestamp}`;
+          const urlWithTimestamp = `${feedUrl}${feedUrl.includes('?') ? '&' : '?'}_t=${timestamp}`;
           
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout

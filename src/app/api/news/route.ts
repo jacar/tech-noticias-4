@@ -3,6 +3,7 @@ import { db, isDatabaseConfigured } from "@/db";
 import { news, sources, categories } from "@/db/schema";
 import { desc, eq, and } from "drizzle-orm";
 import { mockNews } from "@/lib/mock-news";
+import { fetchRssNews } from "@/lib/rss-utils";
 
 export async function GET(request: Request) {
   try {
@@ -12,23 +13,28 @@ export async function GET(request: Request) {
     
     // Check if database is configured
     if (!isDatabaseConfigured()) {
-      // Return mock data if database is not configured
-      let filteredNews = [...mockNews];
-      
-      if (categoryParam) {
-        filteredNews = filteredNews.filter(item => item.category === categoryParam);
+      // If no DB, fetch real RSS news instead of static mock data
+      try {
+        let rssItems = await fetchRssNews(undefined, false);
+        // Apply filters
+        if (categoryParam) {
+          rssItems = rssItems.filter(item => item.category === categoryParam);
+        }
+        if (sourceParam) {
+          rssItems = rssItems.filter(item => item.source === sourceParam);
+        }
+        // Sort and return first 10
+        const sorted = rssItems.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        return NextResponse.json(sorted.slice(0, 10));
+      } catch (rssError) {
+        console.error("RSS fetch error, falling back to mock:", rssError);
+        // Fallback to mock data
+        let filteredNews = [...mockNews];
+        if (categoryParam) filteredNews = filteredNews.filter(item => item.category === categoryParam);
+        if (sourceParam) filteredNews = filteredNews.filter(item => item.source === sourceParam);
+        filteredNews = filteredNews.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        return NextResponse.json(filteredNews.slice(0, 10));
       }
-      
-      if (sourceParam) {
-        filteredNews = filteredNews.filter(item => item.source === sourceParam);
-      }
-      
-      // Sort by most recent date
-      filteredNews = filteredNews.sort((a, b) => 
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-      );
-      
-      return NextResponse.json(filteredNews.slice(0, 10));
     }
     
     try {

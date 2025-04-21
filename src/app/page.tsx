@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { NewsFilter } from "@/components/NewsFilter";
 import { NewsGrid } from "@/components/NewsGrid";
@@ -9,14 +9,20 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { HeroSlider } from "@/components/HeroSlider";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { Footer } from "@/components/Footer";
-import { mockNews } from "@/lib/mock-news";
+import { NewsItem } from "@/types";
 
 export default function HomePage() {
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  // Use a simple slice for initial state
-  const [featuredNews] = useState(() => mockNews.slice(0, 5));
-  
+  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/news?limit=5')
+      .then(res => res.json())
+      .then(data => setFeaturedNews(data))
+      .catch(console.error);
+  }, []);
+
   const handleFilterChange = (source: string | null, category: string | null) => {
     setSourceFilter(source);
     setCategoryFilter(category);
@@ -26,7 +32,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-gray-50 pb-16 dark:bg-slate-950 md:pb-0">
       <Header />
       
-      <HeroSlider news={featuredNews} />
+      {featuredNews.length > 0 && <HeroSlider news={featuredNews} />}
       
       <section className="py-4">
         <div className="container mx-auto">

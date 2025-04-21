@@ -1,21 +1,30 @@
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import type { NewsItem } from '@/types';
 import { Menu, Moon, Sun, Search, Laptop, ChevronDown } from "lucide-react";
 import { newsSources } from "@/lib/news-sources";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { SearchBox } from "./SearchBox";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isPopularOpen, setIsPopularOpen] = useState(false);
+  const [isSavedOpen, setIsSavedOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
+  const popularRef = useRef<HTMLDivElement>(null);
+  const savedRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [popularItems, setPopularItems] = useState<NewsItem[]>([]);
+  const [savedItems, setSavedItems] = useState<NewsItem[]>([]);
 
   // Wait for component to mount to avoid hydration mismatch
   useEffect(() => {
@@ -32,13 +41,21 @@ export const Header = () => {
       if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
         setIsThemeMenuOpen(false);
       }
+
+      if (popularRef.current && !popularRef.current.contains(event.target as Node)) {
+        setIsPopularOpen(false);
+      }
+
+      if (savedRef.current && !savedRef.current.contains(event.target as Node)) {
+        setIsSavedOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuRef, themeMenuRef]);
+  }, [menuRef, themeMenuRef, popularRef, savedRef]);
 
   // Enfocar el campo de búsqueda cuando se abre
   useEffect(() => {
@@ -46,7 +63,39 @@ export const Header = () => {
       searchInputRef.current.focus();
     }
   }, [isSearchOpen]);
-  
+
+  const fetchHeaderPopular = async () => {
+    try {
+      const res = await fetch('/api/news/popular?limit=5');
+      if (res.ok) {
+        const { news } = await res.json();
+        setPopularItems(news);
+      }
+    } catch (e) {
+      console.error('Error fetching header popular:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (isPopularOpen && popularItems.length === 0) fetchHeaderPopular();
+  }, [isPopularOpen]);
+
+  const fetchHeaderSaved = async () => {
+    try {
+      const userId = localStorage.getItem('userId') || 'anonymous';
+      const res = await fetch(`/api/news/save?userId=${userId}`);
+      if (res.ok) {
+        const { saved } = await res.json();
+        setSavedItems(saved);
+      }
+    } catch (e) {
+      console.error('Error fetching header saved:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (isSavedOpen && savedItems.length === 0) fetchHeaderSaved();
+  }, [isSavedOpen]);
 
   // Prepare theme-dependent elements to avoid conditional rendering issues
   const logoSrc = useMemo(() => {
@@ -94,7 +143,7 @@ export const Header = () => {
         {/* Navegación en escritorio - Organizada por categorías */}
         <nav className="hidden md:block">
           <ul className="flex items-center space-x-6">
-            <li><a href="#" className="font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</a></li>
+            <li><Link href="#" className="font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</Link></li>
             
             {/* Categorías - Dropdown */}
             <li className="relative group">
@@ -103,11 +152,11 @@ export const Header = () => {
                 <ChevronDown size={16} className="transition-transform group-hover:rotate-180" />
               </button>
               <div className="absolute left-0 top-full z-20 mt-1 hidden w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 group-hover:block dark:bg-slate-800 dark:ring-slate-700">
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Inteligencia Artificial</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Hardware</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Software</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Dispositivos</a>
-                <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Blockchain</a>
+                <Link href="/?category=Inteligencia%20Artificial" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Inteligencia Artificial</Link>
+                <Link href="/?category=Hardware" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Hardware</Link>
+                <Link href="/?category=Software" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Software</Link>
+                <Link href="/?category=Dispositivos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Dispositivos</Link>
+                <Link href="/?category=Blockchain" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">Blockchain</Link>
               </div>
             </li>
             
@@ -119,9 +168,9 @@ export const Header = () => {
               </button>
               <div className="absolute left-0 top-full z-20 mt-1 hidden w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 group-hover:block dark:bg-slate-800 dark:ring-slate-700">
                 {newsSources.map(source => (
-                  <a 
+                  <Link 
                     key={source.id} 
-                    href="#" 
+                    href={`/?source=${source.id}`} 
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700"
                   >
                     <div className="relative h-4 w-4 overflow-hidden rounded-full">
@@ -134,17 +183,73 @@ export const Header = () => {
                       />
                     </div>
                     <span>{source.name}</span>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </li>
             
-            <li><a href="/popular" className="font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Popular</a></li>
-            <li><a href="#" className="font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Guardados</a></li>
+            <li
+              className="relative"
+              onMouseEnter={() => setIsPopularOpen(true)}
+              onMouseLeave={() => setIsPopularOpen(false)}
+            >
+              <Link href="/popular/" className="font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                Popular
+              </Link>
+              {isPopularOpen && (
+                <div 
+                  ref={popularRef}
+                  className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700"
+                >
+                  {popularItems.map(item => (
+                    <Link
+                      key={item.id}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700"
+                    >
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </li>
+
+            <li
+              className="relative"
+              onMouseEnter={() => setIsSavedOpen(true)}
+              onMouseLeave={() => setIsSavedOpen(false)}
+            >
+              <Link href="#" className="font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                Guardados
+              </Link>
+              {isSavedOpen && (
+                <div
+                  ref={savedRef}
+                  className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700"
+                >
+                  {savedItems.length ? savedItems.map(item => (
+                    <Link
+                      key={item.id}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700"
+                    >
+                      {item.title}
+                    </Link>
+                  )) : (
+                    <span className="block px-4 py-2 text-sm text-gray-500">No hay guardados</span>
+                  )}
+                </div>
+              )}
+            </li>
+            
             {mounted && (
               <>
                 {typeof window !== 'undefined' && localStorage.getItem('debugMode') === 'true' && (
-                  <li><a href="/debug" className="font-medium text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-500">Debug</a></li>
+                  <li><Link href="/debug/" className="font-medium text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-500">Debug</Link></li>
                 )}
               </>
             )}
@@ -213,10 +318,10 @@ export const Header = () => {
       >
         <nav>
           <ul className="space-y-4">
-            <li><a href="#" className="block font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</a></li>
-            <li><a href="/popular" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Popular</a></li>
-            <li><a href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Guardados</a></li>
-            <li><a href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Categorías</a></li>
+            <li><Link href="#" className="block font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</Link></li>
+            <li><Link href="/popular/" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Popular</Link></li>
+            <li><Link href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Guardados</Link></li>
+            <li><Link href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Categorías</Link></li>
           </ul>
           
           <div className="my-6 border-t border-gray-200 pt-4 dark:border-slate-700">
@@ -224,7 +329,10 @@ export const Header = () => {
             <ul className="space-y-3">
               {newsSources.map(source => (
                 <li key={source.id}>
-                  <a href="#" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                  <Link 
+                    href={`/?source=${source.id}`} 
+                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+                  >
                     <div className="relative h-5 w-5 overflow-hidden rounded-full">
                       <Image
                         src={source.logo}
@@ -235,7 +343,7 @@ export const Header = () => {
                       />
                     </div>
                     <span>{source.name}</span>
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

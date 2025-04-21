@@ -620,6 +620,17 @@ export const NewsGrid = ({
     );
   }
 
+  // Show skeletons while loading
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <Skeleton key={idx} className="h-64 w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
   if (news.length === 0 && !loading) {
     return (
       <div className="flex h-64 flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-slate-700 dark:bg-slate-800">
