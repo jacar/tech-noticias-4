@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { NewsItem } from '@/types';
-import { Menu, Moon, Sun, Search, Laptop, ChevronDown } from "lucide-react";
+import { Menu, Moon, Sun, Search, Laptop, ChevronDown, X } from "lucide-react";
 import { newsSources } from "@/lib/news-sources";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -318,12 +318,18 @@ export const Header = () => {
         ref={menuRef}
         className={`absolute left-0 top-16 z-20 h-screen w-64 transform bg-white p-4 shadow-lg transition-transform dark:bg-slate-900 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
+        <div className="flex justify-end mb-4">
+          <button onClick={() => setIsMenuOpen(false)} aria-label="Cerrar menú" className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <X size={20} />
+          </button>
+        </div>
+        <p className="mb-3 text-sm text-gray-500">Se recomienda actualizar los RSS en el botón</p>
         <nav>
           <ul className="space-y-4">
-            <li><Link href="#" className="block font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</Link></li>
+            <li><Link href="/" className="block font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">Inicio</Link></li>
             <li><Link href="/popular/" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Popular</Link></li>
-            <li><Link href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Guardados</Link></li>
-            <li><Link href="#" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Categorías</Link></li>
+            <li><Link href="/saved" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Guardados</Link></li>
+            <li><Link href="/categories" className="block font-medium text-gray-500 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Categorías</Link></li>
           </ul>
           
           <div className="my-6 border-t border-gray-200 pt-4 dark:border-slate-700">
