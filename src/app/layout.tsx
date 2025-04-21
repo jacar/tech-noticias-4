@@ -7,7 +7,6 @@ import {
   AnalyticsTracker,
   ErrorBoundaryClient,
   DOMInspector,
-  Branding,
 } from "@/utils/creatr.scripts";
 import { GlobalErrorHandler } from "@/utils/global-error-handler";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -95,7 +94,6 @@ export default function RootLayout({
               <ErrorBoundaryWrapper>
                 {children}
                 <InstallPrompt />
-                <Branding />
                 <DebugButton />
               </ErrorBoundaryWrapper>
               <AnalyticsTracker siteKey="${siteKey}" />
